@@ -1,60 +1,116 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
 
+const reduseEmail = (state, action) => {
+  if (action.type === "Input-Value") {
+    return { value: action.val, isValid: action.val.includes("@") };
+  }
+  if (action.type === "Blur-Input") {
+    return { value: state.value, isValid: state.value.includes("@") };
+  }
+  return { value: "", isValid: false };
+};
+
+const redusePassword = (state, action) => {
+  if (action.type === "Input-Password") {
+    return { value: action.value, isValid: action.value.trim().length >= 6 };
+  }
+  if (action.type === "Input-Blur") {
+    return { value: state.value, isValid: state.value.trim().length >= 6 };
+  }
+  return { value: "", isValid: false };
+};
+
+const reduseClg = (state, action) => {
+  if (action.type === "Input-ClgName") {
+    return { value: action.val, isValid: action.val.trim().length >= 1 };
+  }
+  if (action.type === "Clg-Blur") {
+    return { value: state.value, isValid: state.value.trim().length >= 1 };
+  }
+  return { value: "", isValid: false };
+};
+
 const Login = (props) => {
-  const [enteredEmail, setEnteredEmail] = useState("");
-  const [emailIsValid, setEmailIsValid] = useState();
-  const [enteredPassword, setEnteredPassword] = useState("");
-  const [passwordIsValid, setPasswordIsValid] = useState();
+  // const [enteredEmail, setEnteredEmail] = useState("");
+  // const [emailIsValid, setEmailIsValid] = useState();
+  // const [enteredPassword, setEnteredPassword] = useState("");
+  // const [passwordIsValid, setPasswordIsValid] = useState();
+  // const [enteredClg, setEnteredClg] = useState("");
+  // const [clgIsValid, setClgValid] = useState();
+
   const [formIsValid, setFormIsValid] = useState(false);
-  const [enteredClg, setEnteredClg] = useState("");
-  const [clgIsValid, setClgValid] = useState();
+
+  const [emailState, dispadchEmail] = useReducer(reduseEmail, {
+    value: "",
+    isValid: null,
+  });
+
+  const [passwordState, dispatchPassword] = useReducer(redusePassword, {
+    value: "",
+    isValid: null,
+  });
+
+  const [clgState, dispatchClg] = useReducer(reduseClg, {
+    value: "",
+    isValid: null,
+  });
+  
+  const { isValid: emailValidated } = emailState;
+  const { isValid: passwordValidated } = passwordState;
+  const { isValid: clgValidated } = clgState;
 
   useEffect(() => {
     const identifier = setTimeout(() => {
       console.log("hii");
-      setFormIsValid(
-        enteredEmail.includes("@") &&
-          enteredPassword.trim().length > 6 &&
-          enteredClg.trim().length >= 1
-      );
-    }, 500);
+      setFormIsValid(emailValidated && passwordValidated && clgValidated);
+    }, 100);
 
     return () => {
       console.log("CLEANUP");
       clearTimeout(identifier);
     };
-  }, [enteredEmail, enteredPassword, enteredClg]);
+  }, [emailValidated, passwordValidated, clgValidated]);
   const emailChangeHandler = (event) => {
-    setEnteredEmail(event.target.value);
+    dispadchEmail({ type: "Input-Value", val: event.target.value });
+
+    // setFormIsValid(
+    //   emailState.isValid && passwordState.isValid && clgState.isValid
+    // );
   };
 
   const passwordChangeHandler = (event) => {
-    setEnteredPassword(event.target.value);
+    dispatchPassword({ type: "Input-Password", value: event.target.value });
+
+    // setFormIsValid(
+    //   emailState.isValid && passwordState.isValid && clgState.isValid
+    // );
   };
 
   const collegeChangeHandler = (event) => {
-    setEnteredClg(event.target.value);
+    dispatchClg({ type: "Input-ClgName", val: event.target.value });
+
+    // setFormIsValid(
+    //   emailState.isValid && passwordState.isValid && clgState.isValid
+    // );
   };
 
   const validateEmailHandler = () => {
-    setEmailIsValid(enteredEmail.includes("@"));
+    dispadchEmail({ type: "Blur-Input" });
   };
-
   const validatePasswordHandler = () => {
-    setPasswordIsValid(enteredPassword.trim().length > 6);
+    dispatchPassword({ type: "Input-Blur" });
   };
-
   const validateCollegeHandler = () => {
-    setClgValid(enteredPassword.trim().length >= 1);
+    dispatchClg({ type: "Clg-Blur" });
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(emailState.value, passwordState.value, clgState.value);
   };
 
   return (
@@ -62,28 +118,28 @@ const Login = (props) => {
       <form onSubmit={submitHandler}>
         <div
           className={`${classes.control} ${
-            emailIsValid === false ? classes.invalid : ""
+            emailState.isValid === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="email">E-Mail</label>
           <input
             type="email"
             id="email"
-            value={enteredEmail}
+            value={emailState.value}
             onChange={emailChangeHandler}
             onBlur={validateEmailHandler}
           />
         </div>
         <div
           className={`${classes.control} ${
-            passwordIsValid === false ? classes.invalid : ""
+            passwordState.isValid === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
-            value={enteredPassword}
+            value={passwordState.value}
             onChange={passwordChangeHandler}
             onBlur={validatePasswordHandler}
           />
@@ -91,14 +147,14 @@ const Login = (props) => {
 
         <div
           className={`${classes.control} ${
-            clgIsValid === false ? classes.invalid : ""
+            clgState.isValid === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="College">College</label>
           <input
             type="text"
             id="clg"
-            value={enteredClg}
+            value={clgState.value}
             onChange={collegeChangeHandler}
             onBlur={validateCollegeHandler}
           />
