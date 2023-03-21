@@ -35,13 +35,13 @@ const reduseClg = (state, action) => {
 };
 
 const Login = (props) => {
+
   // const [enteredEmail, setEnteredEmail] = useState("");
   // const [emailIsValid, setEmailIsValid] = useState();
   // const [enteredPassword, setEnteredPassword] = useState("");
   // const [passwordIsValid, setPasswordIsValid] = useState();
   // const [enteredClg, setEnteredClg] = useState("");
   // const [clgIsValid, setClgValid] = useState();
-
   const [formIsValid, setFormIsValid] = useState(false);
 
   const [emailState, dispadchEmail] = useReducer(reduseEmail, {
@@ -58,7 +58,7 @@ const Login = (props) => {
     value: "",
     isValid: null,
   });
-  
+
   const { isValid: emailValidated } = emailState;
   const { isValid: passwordValidated } = passwordState;
   const { isValid: clgValidated } = clgState;
@@ -68,12 +68,12 @@ const Login = (props) => {
       console.log("hii");
       setFormIsValid(emailValidated && passwordValidated && clgValidated);
     }, 100);
-
     return () => {
       console.log("CLEANUP");
       clearTimeout(identifier);
     };
   }, [emailValidated, passwordValidated, clgValidated]);
+
   const emailChangeHandler = (event) => {
     dispadchEmail({ type: "Input-Value", val: event.target.value });
 
